@@ -6,10 +6,12 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/white"
         android:orientation="vertical"
         android:weightSum="10">
 
@@ -35,6 +37,7 @@
                     android:scaleType="fitCenter"
                     android:background="@color/white"
                     android:layout_gravity="center"
+                    android:onClick="ChangePW"
                     android:adjustViewBounds="true"
                     android:id="@+id/btnChangePW"
                     android:src="@drawable/locker" />
@@ -276,19 +279,22 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="3">
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_shuffle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="shuffle"
+                    android:maxHeight="55dp"
+                    android:background="@color/white"
+                    android:src="@drawable/shuffle"
+                    android:layout_centerInParent="true"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"/>
-            </LinearLayout>
+            </RelativeLayout>
 
             <LinearLayout
                 android:layout_width="0dp"

@@ -7,5 +7,11 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
+    
+    <style name="ChangeMyPW" parent="@style/Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">#3d505d</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:typeface">monospace</item>
+    </style>
 
 </resources>
