@@ -24,11 +24,21 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
-
-            <ImageButton
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="2" />
+                android:layout_weight="2">
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxHeight="80dp"
+                    android:scaleType="fitCenter"
+                    android:background="@color/white"
+                    android:layout_gravity="center"
+                    android:adjustViewBounds="true"
+                    android:id="@+id/btnChangePW"
+                    android:src="@drawable/locker" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -266,14 +276,24 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
-
-            <Button
-                android:id="@+id/btn_shuffle"
+            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="3"
-                android:text="shffle" />
+                android:layout_height="match_parent"
+                android:layout_weight="3">
+
+                <Button
+                    android:id="@+id/btn_shuffle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="shuffle"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6"/>
         </LinearLayout>
 
     </LinearLayout>
