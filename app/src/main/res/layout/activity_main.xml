@@ -48,21 +48,22 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
-            <ImageButton
+            <Button
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:id="@+id/btn_connect"/>
+                android:id="@+id/btn_on"/>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
-            <ImageButton
+            <Button
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="2" />
+                android:layout_weight="2"
+                android:id="@+id/showPairList"/>
         </LinearLayout>
 
         <LinearLayout
