@@ -30,7 +30,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2">
-                <ImageButton
+                <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:maxHeight="80dp"
@@ -40,7 +40,7 @@
                     android:onClick="ChangePW"
                     android:adjustViewBounds="true"
                     android:id="@+id/btnChangePW"
-                    android:src="@drawable/locker" />
+                    android:text="비밀번호 변경"/>
             </LinearLayout>
 
             <LinearLayout
@@ -52,8 +52,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:id="@+id/btn_connect"
-                android:onClick="listPairDevice"/>
+                android:id="@+id/btn_connect"/>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -286,16 +285,16 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3">
 
-                <ImageButton
+                <Button
                     android:id="@+id/btn_shuffle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:maxHeight="55dp"
                     android:background="@color/white"
-                    android:src="@drawable/shuffle"
                     android:layout_centerInParent="true"
                     android:scaleType="fitCenter"
-                    android:adjustViewBounds="true"/>
+                    android:adjustViewBounds="true"
+                    android:text="셔플"/>
             </RelativeLayout>
 
             <LinearLayout
