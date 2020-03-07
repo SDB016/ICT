@@ -3,6 +3,7 @@ package com.example.ict_project;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -120,16 +121,13 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
-        switch (requestCode) {
-            case BT_REQUEST_ENABLE:
-                if (requestCode == BT_REQUEST_ENABLE) { // 블루투스 활성화를 확인 클릭했다면
-                    Toast.makeText(getApplicationContext(), "활성화됨", Toast.LENGTH_LONG).show(); // 블루투스가 활성화 되었을 때 작업
-                } else { // 블루투스 활성화를 취소했다면
-                    Toast.makeText(getApplicationContext(), "취소됨", Toast.LENGTH_LONG).show(); // 사용자가 활성화를 취소한 경우
-                }
-                break;
+        if(requestCode == BT_REQUEST_ENABLE){
+            if (resultCode == Activity.RESULT_OK) { // 블루투스 활성화를 확인 클릭했다면
+                Toast.makeText(getApplicationContext(), "활성화됨", Toast.LENGTH_LONG).show(); // 블루투스가 활성화 되었을 때 작업
+            } else { // 블루투스 활성화를 취소했다면
+                Toast.makeText(getApplicationContext(), "취소됨", Toast.LENGTH_LONG).show(); // 사용자가 활성화를 취소한 경우
+            }
         }
-        super.onActivityResult(requestCode,resultCode,data);
     }
 
     /*
