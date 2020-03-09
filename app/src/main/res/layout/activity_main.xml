@@ -52,7 +52,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                android:id="@+id/btn_on"/>
+                android:id="@+id/btnSearch"/>
 
             <LinearLayout
                 android:layout_width="0dp"
