@@ -254,6 +254,7 @@ public class MainActivity extends AppCompatActivity {
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
         }
+
         public void run() {
             byte[] buffer = new byte[1024];
             int bytes;
@@ -272,6 +273,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+
         public void write(String str) {
             byte[] bytes = str.getBytes();
             try {
@@ -287,5 +289,12 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "소켓 해제 중 오류가 발생했습니다.", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        bluetoothOff();
     }
 }
