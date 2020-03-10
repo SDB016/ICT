@@ -30,17 +30,17 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2">
-                <Button
+                <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:maxHeight="80dp"
                     android:scaleType="fitCenter"
                     android:background="@color/white"
                     android:layout_gravity="center"
+                    android:src="@drawable/change_pw"
                     android:onClick="ChangePW"
                     android:adjustViewBounds="true"
-                    android:id="@+id/btnChangePW"
-                    android:text="비밀번호 변경"/>
+                    android:id="@+id/btnChangePW"/>
             </LinearLayout>
 
             <LinearLayout
@@ -52,6 +52,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
+                android:text="페어링 목록 가져오기"
                 android:id="@+id/btnSearch"/>
 
             <LinearLayout
@@ -59,11 +60,22 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
-            <Button
+            <RelativeLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="2"
-                android:id="@+id/showPairList"/>
+                android:layout_weight="2">
+
+                <ImageButton
+                    android:id="@+id/btnPower"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxHeight="55dp"
+                    android:background="@color/white"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/power"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"/>
+            </RelativeLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -286,16 +298,16 @@
                 android:layout_height="match_parent"
                 android:layout_weight="3">
 
-                <Button
+                <ImageButton
                     android:id="@+id/btn_shuffle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:maxHeight="55dp"
                     android:background="@color/white"
                     android:layout_centerInParent="true"
+                    android:src="@drawable/shuffle"
                     android:scaleType="fitCenter"
-                    android:adjustViewBounds="true"
-                    android:text="셔플"/>
+                    android:adjustViewBounds="true"/>
             </RelativeLayout>
 
             <LinearLayout

@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="VcsDirectoryMappings">
-    <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/brainlock(0201)/brainlock" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/brainlock(0205)/brainlock" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/brainlock/brainlock" vcs="Git" />
+    <mapping directory="" vcs="Git" />
   </component>
 </project>

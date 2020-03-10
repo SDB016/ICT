@@ -7,8 +7,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -74,8 +72,9 @@ public class MainActivity extends AppCompatActivity {
         Shuffle();
         bluetoothOn();
 
-        Button btnShuffle = (Button)findViewById(R.id.btn_shuffle);
+        ImageButton btnShuffle = (ImageButton)findViewById(R.id.btn_shuffle);
         Button btnSearch = (Button)findViewById(R.id.btnSearch);
+        ImageButton btnPower = (ImageButton)findViewById(R.id.btnPower);
 
         btnShuffle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,6 +86,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
             listPairedDevices();
+            }
+        });
+        btnPower.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mBluetoothAdapter.isEnabled()){
+                    bluetoothOff();
+                }
+                else {
+                    bluetoothOn();
+                }
             }
         });
 
@@ -143,10 +153,10 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             if (mBluetoothAdapter.isEnabled()) {
-                Toast.makeText(getApplicationContext(), "블루투스가 이미 활성화 되어 있습니다.", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "블루투스가 이미 활성화 되어 있습니다.", Toast.LENGTH_LONG).show();
             }
             else {
-                Toast.makeText(getApplicationContext(), "블루투스가 활성화 되어 있지 않습니다.", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "블루투스가 활성화 되어 있지 않습니다.", Toast.LENGTH_LONG).show();
                 Intent intentBluetoothEnable = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(intentBluetoothEnable, BT_REQUEST_ENABLE);
             }
