@@ -12,8 +12,6 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
-
 import androidx.appcompat.app.AlertDialog;
 
 public class MainActivity extends Activity implements OnClickListener {
@@ -21,7 +19,6 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	// Debugging
 	private static final String TAG = "Main";
-
 
 	int lenPW=4;
 	String newPW;
