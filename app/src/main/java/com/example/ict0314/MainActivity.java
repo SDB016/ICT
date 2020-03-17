@@ -12,6 +12,8 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AlertDialog;
 
 public class MainActivity extends Activity implements OnClickListener {
@@ -22,24 +24,46 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	int lenPW=4;
 	String newPW;
-	
+
 	// Intent request code
 	private static final int REQUEST_CONNECT_DEVICE = 1;
 	private static final int REQUEST_ENABLE_BT = 2;
-	
+
+	private static final boolean D = true;
+
+	public static final int MESSAGE_STATE_CHANGE = 1;
+
 	// Layout
 	private Button btn_Connect;
 	private Button btn_shuffle;
 	ImageView[] iv_pos = new ImageView[12];
-	
+
 	private BluetoothService btService = null;
-	
-	
+
+
 	private final Handler mHandler = new Handler() {
 
 		@Override
 		public void handleMessage(Message msg) {
 			super.handleMessage(msg);
+
+			switch (msg.what){
+
+				case MESSAGE_STATE_CHANGE :
+					if (D) Log.i(TAG,"MESSAGE_STATE_CHANGE:"+msg.arg1);
+
+					switch(msg.arg1){
+
+						case BluetoothService.STATE_CONNECTED :
+							Toast.makeText(getApplicationContext(),"블루투스 연결에 성공했습니다",Toast.LENGTH_SHORT).show();
+							break;
+
+						case BluetoothService.STATE_FAIL:
+							Toast.makeText(getApplicationContext(),"블루투스 연결에 실패했습니다",Toast.LENGTH_SHORT).show();
+							break;
+					}
+					break;
+			}
 		}
 		
 	};
@@ -70,6 +94,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 	}
 
+
 	@Override
 	public void onClick(View v) {
 		if(btService.getDeviceState()) {
@@ -81,7 +106,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	}
 	
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult " + resultCode);
+        Log.d(TAG, "onActivityResult " + requestCode + resultCode );
         
         switch (requestCode) {
 
@@ -93,7 +118,6 @@ public class MainActivity extends Activity implements OnClickListener {
             case REQUEST_ENABLE_BT:
                 // When the request to enable Bluetooth returns
                 if (resultCode == Activity.RESULT_OK) {
-
                     btService.scanDevice();
                 } else {
 
@@ -102,6 +126,8 @@ public class MainActivity extends Activity implements OnClickListener {
                 break;
         }
 	}
+
+
 	public void Shuffle()
 	{
 		boolean flag[] = new boolean[12];
