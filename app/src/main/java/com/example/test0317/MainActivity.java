@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     List<Map<String,String>> dataDevice;
     AlertDialog.Builder alertBuilder;
     SimpleAdapter adapterDevice;
+    List<BluetoothDevice> bluetoothDevices;
 
     Button btnConnect;
     TextView textName;
@@ -76,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
             onDestroy();
         }
 
+        //Button
         btnConnect = findViewById(R.id.btnConnect);
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //TextView
         textName = findViewById(R.id.textName);
         textAddress = findViewById(R.id.textAddress);
 
@@ -92,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
         savedData = getSharedPreferences("MiniDB",MODE_PRIVATE);
 
+        //Show searched devices
         dataDevice = new ArrayList<>();
         adapterDevice = new SimpleAdapter(this, dataDevice,android.R.layout.simple_expandable_list_item_2, new String[]{"name","address"}, new int[]{android.R.id.text1,android.R.id.text2});
         alertBuilder = new AlertDialog.Builder(this);
@@ -116,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Get paired devices
     private void GetPairedDevice(){
         if(pairedDevices.size() > 0){
             for(BluetoothDevice device : pairedDevices){
@@ -125,29 +131,36 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //search devices
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             switch (action){
-                /*case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
-
+                case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
+                    dataDevice.clear();
                     Toast.makeText(MainActivity.this, "블루투스 검색 시작", Toast.LENGTH_SHORT).show();
                     break;
-                  */
 
                 case  BluetoothDevice.ACTION_FOUND:
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    String deviceName = device.getName();
-                    String deviceHardwareAddress = device.getAddress();
+                    Map map = new HashMap();
+                    map.put("name", device.getName());
+                    map.put("address",device.getAddress());
+                    dataDevice.add(map);
+                    adapterDevice.notifyDataSetChanged();
+                    bluetoothDevices.add(device);
+                    if(device.getAddress().equals(savedData.getString("address","nope")) && pairedDevices.size()>0){
+                        bluetoothAdapter.cancelDiscovery();
+                    }
                     break;
-                /*
+
                 case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
 
-
-            }*/
+                    break;
             }
         }
+
     };
 
     void ConnectSelectDevice(String address){
