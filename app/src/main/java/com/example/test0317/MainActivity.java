@@ -54,7 +54,8 @@ public class MainActivity extends AppCompatActivity {
     Handler mBluetoothHandler;
     ConnectedBluetoothThread mThreadConnectedBluetooth;
 
-    private SharedPreferences
+    private SharedPreferences savedData;
+    private SharedPreferences.Editor editor = savedData.edit();
 
 
     private static final int REQUEST_ENABLE_BT = 1;
@@ -89,6 +90,8 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver,filter);
 
+        savedData = getSharedPreferences("MiniDB",MODE_PRIVATE);
+
         dataDevice = new ArrayList<>();
         adapterDevice = new SimpleAdapter(this, dataDevice,android.R.layout.simple_expandable_list_item_2, new String[]{"name","address"}, new int[]{android.R.id.text1,android.R.id.text2});
         alertBuilder = new AlertDialog.Builder(this);
@@ -98,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialogInterface, int id) {
                 String strName = adapterDevice.getItem(id).toString();
                 String resultAdd = strName.substring(strName.indexOf("address:")+8, strName.indexOf("name:")-2);
-                connectSelectDevice(resultAdd);
+                ConnectSelectDevice(resultAdd);
             }
         });
         alertBuilder.setCancelable(false);
@@ -147,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    void connectSelectDevice(String address){
+    void ConnectSelectDevice(String address){
         mBluetoothDevice = bluetoothAdapter.getRemoteDevice(address);
         try{
             mBluetoothSocket = mBluetoothDevice.createRfcommSocketToServiceRecord(BT_UUID);
