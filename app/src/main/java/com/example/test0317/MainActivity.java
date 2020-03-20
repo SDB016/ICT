@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.view.View;
@@ -59,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
         //UI
         btnSearch = (Button)findViewById(R.id.btnSearch);
         listPaired = (ListView)findViewById(R.id.listPaired);
@@ -99,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
         searchFilter.addAction(BluetoothDevice.ACTION_FOUND); //BluetoothDevice.ACTION_FOUND : 블루투스 디바이스 찾음
         searchFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); //BluetoothAdapter.ACTION_DISCOVERY_FINISHED : 블루투스 검색 종료
         searchFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        stateFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED); //연결되었으면
+        stateFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED); //연결이 끊기면
         registerReceiver(mBluetoothSearchReceiver, searchFilter);
 
         //1. 블루투스가 꺼져있으면 활성화
@@ -167,12 +172,16 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             switch(action){
+
+
                 //블루투스 디바이스 검색 종료
                 case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
                     dataDevice.clear();
                     bluetoothDevices.clear();
                     Toast.makeText(MainActivity.this, "블루투스 검색 시작", Toast.LENGTH_SHORT).show();
                     break;
+
+
                 //블루투스 디바이스 찾음
                 case BluetoothDevice.ACTION_FOUND:
                     //검색한 블루투스 디바이스의 객체를 구한다
@@ -184,14 +193,17 @@ public class MainActivity extends AppCompatActivity {
                     dataDevice.add(map);
                     //리스트 목록갱신
                     adapterDevice.notifyDataSetChanged();
-
                     //블루투스 디바이스 저장
                     bluetoothDevices.add(device);
                     break;
+
+
                 //블루투스 디바이스 검색 종료
                 case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
                     btnSearch.setEnabled(true);
                     break;
+
+
                 //블루투스 디바이스 페어링 상태 변화
                 case BluetoothDevice.ACTION_BOND_STATE_CHANGED:
                     BluetoothDevice paired = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
@@ -207,13 +219,20 @@ public class MainActivity extends AppCompatActivity {
                         //검색된 목록
                         if(selectDevice != -1){
                             bluetoothDevices.remove(selectDevice);
-
                             dataDevice.remove(selectDevice);
                             adapterDevice.notifyDataSetChanged();
                             selectDevice = -1;
                         }
                     }
                     break;
+
+
+                case BluetoothDevice.ACTION_ACL_CONNECTED:
+                    Toast.makeText(getApplicationContext(),"페어링 되었습니다",Toast.LENGTH_LONG).show();
+                    //editor.putBoolean("IsAddress",true);
+                    break;
+
+
             }
         }
     };
