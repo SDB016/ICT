@@ -4,8 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -23,6 +25,7 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -37,14 +40,17 @@ public class MainActivity extends AppCompatActivity {
 
     //BluetoothAdapter
     BluetoothAdapter mBluetoothAdapter;
+    BluetoothSocket mBluetoothSocket;
 
     //블루투스 요청 액티비티 코드
     final static int BLUETOOTH_REQUEST_CODE = 100;
 
+    private SharedPreferences savedData;
+    private SharedPreferences.Editor editor;
+
     //UI
     Button btnSearch;
     ListView listPaired;
-    ListView listDevice;
 
     //Adapter
     SimpleAdapter adapterPaired;
@@ -54,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
     List<Map<String,String>> dataPaired;
     List<Map<String,String>> dataDevice;
     List<BluetoothDevice> bluetoothDevices;
+
+    AlertDialog.Builder alertBuilder1;
     int selectDevice;
 
 
@@ -62,15 +70,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
-
         //UI
         btnSearch = (Button)findViewById(R.id.btnSearch);
         listPaired = (ListView)findViewById(R.id.listPaired);
-        listDevice = (ListView)findViewById(R.id.listDevice);
 
         //Adapter1
         dataPaired = new ArrayList<>();
@@ -79,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
         //Adapter2
         dataDevice = new ArrayList<>();
         adapterDevice = new SimpleAdapter(this, dataDevice, android.R.layout.simple_list_item_2, new String[]{"name","address"}, new int[]{android.R.id.text1, android.R.id.text2});
-        listDevice.setAdapter(adapterDevice);
 
         //검색된 블루투스 디바이스 데이터
         bluetoothDevices = new ArrayList<>();
@@ -95,6 +101,9 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        savedData = getSharedPreferences("miniDB",MODE_PRIVATE);
+        editor = savedData.edit();
 
         //블루투스 브로드캐스트 리시버 등록
         //리시버2
@@ -119,25 +128,56 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        //검색된 디바이스목록 클릭시 페어링 요청
-        listDevice.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mBluetoothAdapter.cancelDiscovery();
-                BluetoothDevice device = bluetoothDevices.get(position);
 
+        alertBuilder1 = new AlertDialog.Builder(this);
+        alertBuilder1.setTitle("검색된 디바이스");
+        alertBuilder1.setAdapter(adapterDevice, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                BluetoothDevice device;
+                mBluetoothAdapter.cancelDiscovery();
+                String strName = adapterDevice.getItem(id).toString();
+                String resultAdd = strName.substring(strName.indexOf("address=")+8, strName.indexOf("name=")-2);
+                device = mBluetoothAdapter.getRemoteDevice(resultAdd);
                 try {
                     //선택한 디바이스 페어링 요청
                     Method method = device.getClass().getMethod("createBond", (Class[]) null);
                     method.invoke(device, (Object[]) null);
-                    selectDevice = position;
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
+        //alertBuilder1.setCancelable(false);
     }
 
+
+    //블루투스 상태변화 BroadcastReceiver
+    BroadcastReceiver mBluetoothStateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //BluetoothAdapter.EXTRA_STATE : 블루투스의 현재상태 변화
+            int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
+
+            //블루투스 활성화
+            if(state == BluetoothAdapter.STATE_ON){
+                Toast.makeText(getApplicationContext(),"블루투스 활성화",Toast.LENGTH_LONG).show();
+            }
+            //블루투스 활성화 중
+            else if(state == BluetoothAdapter.STATE_TURNING_ON){
+                Toast.makeText(getApplicationContext(),"블루투스 활성화 중...",Toast.LENGTH_LONG).show();
+            }
+            //블루투스 비활성화
+            else if(state == BluetoothAdapter.STATE_OFF){
+                Toast.makeText(getApplicationContext(),"블루투스 비활성화",Toast.LENGTH_LONG).show();
+            }
+            //블루투스 비활성화 중
+            else if(state == BluetoothAdapter.STATE_TURNING_OFF){
+                Toast.makeText(getApplicationContext(),"블루투스 비활성화 중...",Toast.LENGTH_LONG).show();
+            }
+        }
+    };
 
     //블루투스 검색결과 BroadcastReceiver
     BroadcastReceiver mBluetoothSearchReceiver = new BroadcastReceiver() {
@@ -174,6 +214,7 @@ public class MainActivity extends AppCompatActivity {
                 //블루투스 디바이스 검색 종료
                 case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
                     btnSearch.setEnabled(true);
+                    alertBuilder1.show();
                     break;
 
 
@@ -198,13 +239,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     break;
-
-
-                case BluetoothDevice.ACTION_ACL_CONNECTED:
-                    Toast.makeText(getApplicationContext(),"페어링 되었습니다",Toast.LENGTH_LONG).show();
-                    //editor.putBoolean("IsAddress",true);
-                    break;
-
 
             }
         }
@@ -265,9 +299,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        unregisterReceiver(mBluetoothStateReceiver);
         unregisterReceiver(mBluetoothSearchReceiver);
         super.onDestroy();
     }
 }
-
 
