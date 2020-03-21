@@ -1,5 +1,6 @@
 package com.example.test0317;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -23,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -60,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
 
         //UI
@@ -92,18 +97,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //블루투스 브로드캐스트 리시버 등록
-        //리시버1
-        IntentFilter stateFilter = new IntentFilter();
-        stateFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED); //BluetoothAdapter.ACTION_STATE_CHANGED : 블루투스 상태변화 액션
-        registerReceiver(mBluetoothStateReceiver, stateFilter);
         //리시버2
         IntentFilter searchFilter = new IntentFilter();
         searchFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); //BluetoothAdapter.ACTION_DISCOVERY_STARTED : 블루투스 검색 시작
         searchFilter.addAction(BluetoothDevice.ACTION_FOUND); //BluetoothDevice.ACTION_FOUND : 블루투스 디바이스 찾음
         searchFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); //BluetoothAdapter.ACTION_DISCOVERY_FINISHED : 블루투스 검색 종료
         searchFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        stateFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED); //연결되었으면
-        stateFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED); //연결이 끊기면
         registerReceiver(mBluetoothSearchReceiver, searchFilter);
 
         //1. 블루투스가 꺼져있으면 활성화
@@ -139,32 +138,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
-    //블루투스 상태변화 BroadcastReceiver
-    BroadcastReceiver mBluetoothStateReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            //BluetoothAdapter.EXTRA_STATE : 블루투스의 현재상태 변화
-            int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
-
-            //블루투스 활성화
-            if(state == BluetoothAdapter.STATE_ON){
-                Toast.makeText(getApplicationContext(),"블루투스 활성화",Toast.LENGTH_LONG).show();
-            }
-            //블루투스 활성화 중
-            else if(state == BluetoothAdapter.STATE_TURNING_ON){
-                Toast.makeText(getApplicationContext(),"블루투스 활성화 중...",Toast.LENGTH_LONG).show();
-            }
-            //블루투스 비활성화
-            else if(state == BluetoothAdapter.STATE_OFF){
-                Toast.makeText(getApplicationContext(),"블루투스 비활성화",Toast.LENGTH_LONG).show();
-            }
-            //블루투스 비활성화 중
-            else if(state == BluetoothAdapter.STATE_TURNING_OFF){
-                Toast.makeText(getApplicationContext(),"블루투스 비활성화 중...",Toast.LENGTH_LONG).show();
-            }
-        }
-    };
 
     //블루투스 검색결과 BroadcastReceiver
     BroadcastReceiver mBluetoothSearchReceiver = new BroadcastReceiver() {
@@ -292,7 +265,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        unregisterReceiver(mBluetoothStateReceiver);
         unregisterReceiver(mBluetoothSearchReceiver);
         super.onDestroy();
     }
