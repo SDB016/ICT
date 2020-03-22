@@ -13,12 +13,16 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.DataSetObserver;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -29,12 +33,16 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,15 +50,23 @@ public class MainActivity extends AppCompatActivity {
     BluetoothAdapter mBluetoothAdapter;
     BluetoothSocket mBluetoothSocket;
 
+    Handler mBluetoothHandler;
+
     //블루투스 요청 액티비티 코드
     final static int BLUETOOTH_REQUEST_CODE = 100;
+    final static int BT_MESSAGE_READ = 8;
 
     private SharedPreferences savedData;
     private SharedPreferences.Editor editor;
 
+    ConnectedBluetoothThread mThreadConnectedBluetooth;
+
     //UI
     Button btnSearch;
-    ListView listPaired;
+    Button btnShuffle;
+    Button btnChangePW;
+    ImageView[] iv_pos = new ImageView[12];
+
 
     //Adapter
     SimpleAdapter adapterPaired;
@@ -63,7 +79,16 @@ public class MainActivity extends AppCompatActivity {
 
     AlertDialog.Builder alertBuilder1;
     int selectDevice;
+    String newPW;
+    int lenPW = 4;
+    int indexStart, indexEnd = -1;
 
+
+    //입력받은 데이터가 저장될 버퍼
+    byte[] buffer = new byte[1024];
+
+
+    final static UUID BT_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,12 +102,13 @@ public class MainActivity extends AppCompatActivity {
 
         //UI
         btnSearch = (Button)findViewById(R.id.btnSearch);
-        listPaired = (ListView)findViewById(R.id.listPaired);
+        btnShuffle = findViewById(R.id.btn_shuffle);
+        btnChangePW = findViewById(R.id.btnChangePW);
+
 
         //Adapter1
         dataPaired = new ArrayList<>();
         adapterPaired = new SimpleAdapter(this, dataPaired, android.R.layout.simple_list_item_2, new String[]{"name","address"}, new int[]{android.R.id.text1, android.R.id.text2});
-        listPaired.setAdapter(adapterPaired);
         //Adapter2
         dataDevice = new ArrayList<>();
         adapterDevice = new SimpleAdapter(this, dataDevice, android.R.layout.simple_list_item_2, new String[]{"name","address"}, new int[]{android.R.id.text1, android.R.id.text2});
@@ -128,6 +154,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+        btnShuffle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Shuffle();
+            }
+        });
+
 
         alertBuilder1 = new AlertDialog.Builder(this);
         alertBuilder1.setTitle("검색된 디바이스");
@@ -137,19 +170,111 @@ public class MainActivity extends AppCompatActivity {
                 BluetoothDevice device;
                 mBluetoothAdapter.cancelDiscovery();
                 String strName = adapterDevice.getItem(id).toString();
-                String resultAdd = strName.substring(strName.indexOf("address=")+8, strName.indexOf("name=")-2);
-                device = mBluetoothAdapter.getRemoteDevice(resultAdd);
+                String address = strName.substring(strName.indexOf("address=")+8, strName.indexOf("name=")-2);
+                device = mBluetoothAdapter.getRemoteDevice(address);
                 try {
                     //선택한 디바이스 페어링 요청
-                    Method method = device.getClass().getMethod("createBond", (Class[]) null);
-                    method.invoke(device, (Object[]) null);
-
+                   // Method method = device.getClass().getMethod("createBond", (Class[]) null);
+                   // method.invoke(device, (Object[]) null);
+                    mBluetoothSocket = device.createInsecureRfcommSocketToServiceRecord(BT_UUID);
+                    mBluetoothSocket.connect();
+                    mThreadConnectedBluetooth = new ConnectedBluetoothThread(mBluetoothSocket);
+                    mThreadConnectedBluetooth.start();
+                    editor.putString("address",address);
+                    editor.putBoolean("IsAddress",true);
+                    editor.apply();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    editor.putBoolean("IsAddress",false);
                 }
             }
         });
         //alertBuilder1.setCancelable(false);
+    }
+
+    private class ConnectedBluetoothThread extends Thread{
+        private final BluetoothSocket mmSocket;
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+
+        public ConnectedBluetoothThread(BluetoothSocket socket) {
+            mmSocket = socket;
+            InputStream tmpIn = null;
+            OutputStream tmpOut = null;
+
+            try {
+                tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
+            } catch (IOException e) {
+                Toast.makeText(getApplicationContext(), "소켓 연결 중 오류가 발생했습니다.", Toast.LENGTH_LONG).show();
+            }
+            mmInStream = tmpIn;
+            mmOutStream = tmpOut;
+        }
+
+        public void run() {
+            int bytes;
+
+            while (true) {
+                try {
+                    bytes = mmInStream.available();
+                    if (bytes != 0) {
+                        SystemClock.sleep(100);
+                        bytes = mmInStream.available(); // 현재 읽을 수 있는 바이트 수를 얻는다
+                        bytes = mmInStream.read(buffer, 0, bytes); // bytes만큼 읽어서 buffer[]의 0의 자리에 저장한다
+                        mBluetoothHandler.obtainMessage(BT_MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+
+                        SearchStartEnd();
+
+                    }
+                } catch (IOException e) {
+                    break;
+                }
+            }
+        }
+/*
+        public void write(String str) {
+            byte[] bytes = str.getBytes();
+            try {
+                mmOutStream.write(bytes);
+            } catch (IOException e) {
+                Toast.makeText(getApplicationContext(), "데이터 전송 중 오류가 발생했습니다.", Toast.LENGTH_LONG).show();
+            }
+        }*/
+
+        public void write1(byte str) {
+            byte bytes = str;
+            try {
+                mmOutStream.write(bytes);
+            } catch (IOException e) {
+                Toast.makeText(getApplicationContext(), "데이터 전송 중 오류가 발생했습니다.", Toast.LENGTH_LONG).show();
+            }
+        }
+
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                Toast.makeText(getApplicationContext(), "소켓 해제 중 오류가 발생했습니다.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+
+    public void SearchStartEnd(){
+
+        for(int i =0; i<buffer.length; i++){
+            if("0x3C".equals(buffer[i])){
+                indexStart = i;
+                break;
+            }
+        }
+        for (int k = 0; k<buffer.length; k++){
+            if("0x3E".equals(buffer[k])){
+                indexEnd = k;
+                break;
+            }
+        }
     }
 
 
@@ -278,6 +403,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -296,6 +422,58 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
+
+
+    public void Shuffle()
+    {
+        boolean flag[] = new boolean[12];
+        for(int i = 1; i < 13; i++)
+        {
+            while(true) {
+                int rnd = (int)(Math.random() * 12 ); //rnd는 0~11까지 랜덤 수
+                if (!flag[rnd]) {
+                    int posId = getResources().getIdentifier("pos" + i, "id", getPackageName()); // @+id/pos1, @+id/pos2...를 posId에 넣는다.
+                    int drawableId = getResources().getIdentifier("line_" + rnd, "drawable", getPackageName()); // drawable/line_0, drawable/line_2를 drawableId에 넣는다
+
+                    iv_pos[i - 1] = (ImageView) findViewById(posId); //id 할당
+                    iv_pos[i - 1].setImageResource(drawableId);  // 할당된 iv_pos[]에 그림 그리기
+                    flag[rnd] = !flag[rnd];
+
+                    if(rnd ==  11){
+                        mThreadConnectedBluetooth.write1((byte)((byte)(0x60)+(byte)(i-1)));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+
+
+    public void ChangePW(View view)
+    {
+        final EditText et = new EditText(this);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this,R.style.ChangeMyPW);
+        builder.setTitle("비밀번호 바꾸기").setMessage("변경할 비밀번호를 입력하세요");;
+
+        builder.setView(et);
+
+        builder.setPositiveButton("저장", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                newPW = et.getText().toString();
+                lenPW = Integer.parseInt(newPW);
+            }
+        });
+        builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
 
     @Override
     protected void onDestroy() {
