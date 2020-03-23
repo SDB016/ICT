@@ -15,6 +15,7 @@ import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
     String newPW;
 
     //입력받은 데이터가 저장될 버퍼
-    byte[] buffer = new byte[1024];
+//    byte[] buffer = new byte[1024];
     byte[] receivedPW = new byte[32];
 
 
@@ -217,23 +218,36 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void run() {
+            byte[] buffer = new byte[1024];
             int bytes;
 
             while (true) {
                 try {
-                    bytes = mmInStream.available();
-                    if (bytes != 0) {
-                        SystemClock.sleep(100);
-                        bytes = mmInStream.available(); // 현재 읽을 수 있는 바이트 수를 얻는다
-                        bytes = mmInStream.read(buffer, 0, bytes); // bytes만큼 읽어서 buffer[]의 0의 자리에 저장한다
-
-                        SearchStartEnd();
-                        CopyArray();
-
-                    }
+                    // Read from the InputStream
+                    bytes = mmInStream.read(buffer);
+                    // Send the obtained bytes to the UI Activity
+                    //mHandler.obtainMessage(BebopActivity.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    SearchStartEnd(bytes, buffer);
                 } catch (IOException e) {
+                    Log.e("MainActivity", "connected(run) - message=" + e.getLocalizedMessage());
+                    //connectionLost();
                     break;
                 }
+
+//                try {
+//                    bytes = mmInStream.available();
+//                    if (bytes != 0) {
+//                        SystemClock.sleep(100);
+//                        bytes = mmInStream.available(); // 현재 읽을 수 있는 바이트 수를 얻는다
+//                        bytes = mmInStream.read(buffer, 0, bytes); // bytes만큼 읽어서 buffer[]의 0의 자리에 저장한다
+//
+//                        SearchStartEnd();
+//                        CopyArray();
+//
+//                    }
+//                } catch (IOException e) {
+//                    break;
+//                }
             }
         }
 /*
@@ -265,23 +279,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void SearchStartEnd(){
+    public void SearchStartEnd(int bytes, byte[] buffer){
+        byte[] readBuf = buffer;
+        String readMessage = new String(readBuf, 0, bytes);
+        Log.e("MainActivity", "SearchStartEnd(run) - message=" + readMessage);
 
-        for(int i =0; i<buffer.length; i++){
-            if("0x3C".equals(buffer[i])){
-                indexStart = i;
-                break;
-            }
-        }
-        for (int k = 0; k<buffer.length; k++){
-            if("0x3E".equals(buffer[k])){
-                indexEnd = k;
-                break;
-            }
-        }
+//        for(int i =0; i<buffer.length; i++){
+//            if("0x3C".equals(buffer[i])){
+//                indexStart = i;
+//                break;
+//            }
+//        }
+//        for (int k = 0; k<buffer.length; k++){
+//            if("0x3E".equals(buffer[k])){
+//                indexEnd = k;
+//                break;
+//            }
+//        }
     }
 
-    public void CopyArray(){
+    public void CopyArray(byte[] buffer){
         System.arraycopy(buffer, indexStart+1, receivedPW, 0, (indexEnd - indexStart - 1));
         buffer = null;
         Toast.makeText(getApplicationContext(),receivedPW[0],Toast.LENGTH_LONG).show();
