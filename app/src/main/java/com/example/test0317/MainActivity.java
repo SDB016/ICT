@@ -79,13 +79,17 @@ public class MainActivity extends AppCompatActivity {
 
     AlertDialog.Builder alertBuilder1;
     int selectDevice;
-    String newPW;
-    int lenPW = 4;
+
     int indexStart, indexEnd = -1;
 
 
+
+    String newPW;
+
     //입력받은 데이터가 저장될 버퍼
     byte[] buffer = new byte[1024];
+    byte[] receivedPW = new byte[32];
+
 
 
     final static UUID BT_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
@@ -222,9 +226,9 @@ public class MainActivity extends AppCompatActivity {
                         SystemClock.sleep(100);
                         bytes = mmInStream.available(); // 현재 읽을 수 있는 바이트 수를 얻는다
                         bytes = mmInStream.read(buffer, 0, bytes); // bytes만큼 읽어서 buffer[]의 0의 자리에 저장한다
-                        mBluetoothHandler.obtainMessage(BT_MESSAGE_READ, bytes, -1, buffer).sendToTarget();
 
                         SearchStartEnd();
+                        CopyArray();
 
                     }
                 } catch (IOException e) {
@@ -275,6 +279,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
         }
+    }
+
+    public void CopyArray(){
+        System.arraycopy(buffer, indexStart+1, receivedPW, 0, (indexEnd - indexStart - 1));
+        buffer = null;
+        Toast.makeText(getApplicationContext(),receivedPW[0],Toast.LENGTH_LONG).show();
     }
 
 
@@ -462,7 +472,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 newPW = et.getText().toString();
-                lenPW = Integer.parseInt(newPW);
+                Toast.makeText(getApplicationContext(),newPW,Toast.LENGTH_LONG).show();
             }
         });
         builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -477,6 +487,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        receivedPW = null;
         unregisterReceiver(mBluetoothStateReceiver);
         unregisterReceiver(mBluetoothSearchReceiver);
         super.onDestroy();
