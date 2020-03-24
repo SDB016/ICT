@@ -15,6 +15,7 @@ import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.text.LoginFilter;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -143,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
         searchFilter.addAction(BluetoothDevice.ACTION_FOUND); //BluetoothDevice.ACTION_FOUND : 블루투스 디바이스 찾음
         searchFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); //BluetoothAdapter.ACTION_DISCOVERY_FINISHED : 블루투스 검색 종료
         searchFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        searchFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         registerReceiver(mBluetoothSearchReceiver, searchFilter);
 
         //1. 블루투스가 꺼져있으면 활성화
@@ -177,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
                 String strName = adapterDevice.getItem(id).toString();
                 String address = strName.substring(strName.indexOf("address=")+8, strName.indexOf("name=")-2);
                 device = mBluetoothAdapter.getRemoteDevice(address);
+
                 try {
                     //선택한 디바이스 페어링 요청
                    // Method method = device.getClass().getMethod("createBond", (Class[]) null);
@@ -221,13 +224,27 @@ public class MainActivity extends AppCompatActivity {
             byte[] buffer = new byte[1024];
             int bytes;
 
+            int checkBytes = 0;
+            byte[] buffer_b = new byte[1024];
+
             while (true) {
                 try {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
+
+                    if(bytes == 1){ //통신 시 한자리만 오는 것을 예외처리
+                        System.arraycopy(buffer, 0,buffer_b,0,1);
+                        checkBytes = 1;
+                    } else {
+                        if(checkBytes == 1){
+                            System.arraycopy(buffer,0,buffer_b,1,bytes);
+                            checkBytes = 0;
+                        }
+                    }
+
                     // Send the obtained bytes to the UI Activity
                     //mHandler.obtainMessage(BebopActivity.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
-                    SearchStartEnd(bytes, buffer);
+                    GetReceivedData(bytes+1, buffer_b);
                 } catch (IOException e) {
                     Log.e("MainActivity", "connected(run) - message=" + e.getLocalizedMessage());
                     //connectionLost();
@@ -250,7 +267,22 @@ public class MainActivity extends AppCompatActivity {
 //                }
             }
         }
-/*
+
+        public void GetReceivedData(int bytes, byte[] buffer){
+            byte[] readBuf = buffer;
+            if(bytes>=3) { //앞뒤로 < >가 들어가므로 최소 3자리
+                String readMessage = new String(readBuf, 0, bytes);
+                Log.e("MainActivity", "SearchStartEnd(run) - message=" + readMessage);
+                String RealMessage = new String();
+                RealMessage = readMessage.substring(1, bytes-1);
+                Log.e("MainActivity","realMessage = " + RealMessage);
+                char [] charMessage = new char[RealMessage.length()];
+                RealMessage.getChars(0,RealMessage.length(),charMessage,0); //charMessage에 문자열을 문자배열로 복사
+            }
+            //readBuf = null;
+        }
+
+        /*
         public void write(String str) {
             byte[] bytes = str.getBytes();
             try {
@@ -279,24 +311,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void SearchStartEnd(int bytes, byte[] buffer){
-        byte[] readBuf = buffer;
-        String readMessage = new String(readBuf, 0, bytes);
-        Log.e("MainActivity", "SearchStartEnd(run) - message=" + readMessage);
 
-//        for(int i =0; i<buffer.length; i++){
-//            if("0x3C".equals(buffer[i])){
-//                indexStart = i;
-//                break;
-//            }
-//        }
-//        for (int k = 0; k<buffer.length; k++){
-//            if("0x3E".equals(buffer[k])){
-//                indexEnd = k;
-//                break;
-//            }
-//        }
-    }
 
     public void CopyArray(byte[] buffer){
         System.arraycopy(buffer, indexStart+1, receivedPW, 0, (indexEnd - indexStart - 1));
@@ -336,6 +351,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            String savedAddress = savedData.getString("address",null);
+
             switch(action){
 
 
@@ -344,6 +361,13 @@ public class MainActivity extends AppCompatActivity {
                     dataDevice.clear();
                     bluetoothDevices.clear();
                     Toast.makeText(MainActivity.this, "블루투스 검색 시작", Toast.LENGTH_SHORT).show();
+                    alertBuilder1.show();
+                    break;
+
+
+                //블루투스 디바이스 검색 종료
+                case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
+                    btnSearch.setEnabled(true);
                     break;
 
 
@@ -351,6 +375,7 @@ public class MainActivity extends AppCompatActivity {
                 case BluetoothDevice.ACTION_FOUND:
                     //검색한 블루투스 디바이스의 객체를 구한다
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
                     //데이터 저장
                     Map map = new HashMap();
                     map.put("name", device.getName()); //device.getName() : 블루투스 디바이스의 이름
@@ -359,16 +384,8 @@ public class MainActivity extends AppCompatActivity {
                     //리스트 목록갱신
                     adapterDevice.notifyDataSetChanged();
                     //블루투스 디바이스 저장
-                    bluetoothDevices.add(device);
+
                     break;
-
-
-                //블루투스 디바이스 검색 종료
-                case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
-                    btnSearch.setEnabled(true);
-                    alertBuilder1.show();
-                    break;
-
 
                 //블루투스 디바이스 페어링 상태 변화
                 case BluetoothDevice.ACTION_BOND_STATE_CHANGED:
@@ -392,6 +409,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
 
+                case BluetoothDevice.ACTION_ACL_CONNECTED:
+
+                    break;
             }
         }
     };
@@ -467,7 +487,7 @@ public class MainActivity extends AppCompatActivity {
                     flag[rnd] = !flag[rnd];
 
                     if(rnd ==  11){
-                        mThreadConnectedBluetooth.write1((byte)((byte)(0x60)+(byte)(i-1)));
+                        mThreadConnectedBluetooth.write1((byte)((byte)(0x60)+(byte)(i-1))); //*자리 전송
                     }
                     break;
                 }
