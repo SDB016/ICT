@@ -1,6 +1,7 @@
 package com.example.test0317;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -30,6 +31,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,6 +49,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
+
 
     //BluetoothAdapter
     BluetoothAdapter mBluetoothAdapter;
@@ -85,8 +88,9 @@ public class MainActivity extends AppCompatActivity {
     int indexStart, indexEnd = -1;
 
 
-
+    String RealMessage = new String();
     String newPW;
+    String RecievedPW;
 
     //입력받은 데이터가 저장될 버퍼
 //    byte[] buffer = new byte[1024];
@@ -100,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
@@ -160,6 +163,8 @@ public class MainActivity extends AppCompatActivity {
             GetListPairedDevice();
         }
 
+
+        Shuffle();
 
         btnShuffle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -273,11 +278,9 @@ public class MainActivity extends AppCompatActivity {
             if(bytes>=3) { //앞뒤로 < >가 들어가므로 최소 3자리
                 String readMessage = new String(readBuf, 0, bytes);
                 Log.e("MainActivity", "SearchStartEnd(run) - message=" + readMessage);
-                String RealMessage = new String();
                 RealMessage = readMessage.substring(1, bytes-1);
                 Log.e("MainActivity","realMessage = " + RealMessage);
-                char [] charMessage = new char[RealMessage.length()];
-                RealMessage.getChars(0,RealMessage.length(),charMessage,0); //charMessage에 문자열을 문자배열로 복사
+                ComparePW(RecievedPW);
             }
             //readBuf = null;
         }
@@ -310,14 +313,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-
-
-    public void CopyArray(byte[] buffer){
-        System.arraycopy(buffer, indexStart+1, receivedPW, 0, (indexEnd - indexStart - 1));
-        buffer = null;
-        Toast.makeText(getApplicationContext(),receivedPW[0],Toast.LENGTH_LONG).show();
-    }
 
 
     //블루투스 상태변화 BroadcastReceiver
@@ -474,6 +469,8 @@ public class MainActivity extends AppCompatActivity {
     public void Shuffle()
     {
         boolean flag[] = new boolean[12];
+        char[] rndArray = new char[12];
+
         for(int i = 1; i < 13; i++)
         {
             while(true) {
@@ -485,14 +482,26 @@ public class MainActivity extends AppCompatActivity {
                     iv_pos[i - 1] = (ImageView) findViewById(posId); //id 할당
                     iv_pos[i - 1].setImageResource(drawableId);  // 할당된 iv_pos[]에 그림 그리기
                     flag[rnd] = !flag[rnd];
+                    rndArray[i-1] = (char)rnd;
 
-                    if(rnd ==  11){
-                        mThreadConnectedBluetooth.write1((byte)((byte)(0x60)+(byte)(i-1))); //*자리 전송
+                    if(mBluetoothSocket!=null) {
+                        if (rnd == 11) {
+                            mThreadConnectedBluetooth.write1((byte) ((byte) (0x60) + (byte) (i - 1))); //*자리 전송
+                        } else if (rnd == 10) {
+                            mThreadConnectedBluetooth.write1((byte) ((byte) (0x70) + (byte) (i - 1))); //#자리 전송
+                        }
                     }
                     break;
                 }
             }
         }
+        char[] charMessage = new char[RealMessage.length()];
+        RealMessage.getChars(0, RealMessage.length(), charMessage, 0); //charMessage에 문자열을 문자배열로 복사
+
+        for(int k = 0; k<RealMessage.length(); k++) {
+            charMessage[k] = rndArray[charMessage[k]];
+        }
+        RecievedPW = new String(charMessage);
     }
 
 
@@ -509,7 +518,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 newPW = et.getText().toString();
-                Toast.makeText(getApplicationContext(),newPW,Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),"비밀번호가 " + newPW + "로 변경되었습니다",Toast.LENGTH_LONG).show();
             }
         });
         builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -521,10 +530,16 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
+    public void ComparePW(String str){
+        if(newPW.equals(str)){
+            mThreadConnectedBluetooth.write1((byte)0x41);
+        }
+    }
 
     @Override
     protected void onDestroy() {
         receivedPW = null;
+        mThreadConnectedBluetooth.cancel();
         unregisterReceiver(mBluetoothStateReceiver);
         unregisterReceiver(mBluetoothSearchReceiver);
         super.onDestroy();
