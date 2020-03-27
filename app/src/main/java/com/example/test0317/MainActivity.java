@@ -277,22 +277,23 @@ public class MainActivity extends AppCompatActivity {
                 String readMessage = new String(readBuf, 0, bytes);
                 Log.e("MainActivity", "SearchStartEnd(run) - message=" + readMessage);
                 RealMessage = readMessage.substring(1, bytes-1);  // RealMessage : 앞뒤 < >를 잘라낸 데이터
-                /*Log.e("MainActivity","realMessage = " + RealMessage);
-                arrMessage = RealMessage.toCharArray(); //arrMessage : 받아온 문자열 -> char[]로 변환한 데이터*/
+                Log.e("MainActivity","realMessage = " + RealMessage);
+                /*arrMessage = RealMessage.toCharArray(); //arrMessage : 받아온 문자열 -> char[]로 변환한 데이터*/
 
 
                 char[] charPW = new char[newPW.length()];
                 for(int i = 0; i<charPW.length;i++) { //newPW의 길이만큼 실행
                     charPW[i] = (newPW.charAt(i)); //newPW를 char[]로 자르기
-                    Log.d("main", "charPW = " + charPW[i]);
                 }
 
                 int[] tmp = new int[charPW.length];
+                Log.d("main", "charPW = " + charPW[0]);
 
                 for (int i = 0; i<charPW.length;i++) {
-                    tmp[i] = rndArray[charPW[i]]; //charPW(값)이 있는 위치값을 tmp에 저장한다
+                    char k = charPW[i];
+                    tmp[i] = rndArray[k-48]; //charPW(값)이 있는 위치값을 tmp에 저장한다
                 }
-                String str = Arrays.toString(tmp).replace("[^0-9]","");
+                String str = Arrays.toString(tmp).replace("10","A").replace("11","B").replace(", ","").replace("[","").replace("]","");
                 Log.d("main","strstr = "+str);
 
                 if (RealMessage.equals(str)){
@@ -517,6 +518,14 @@ public class MainActivity extends AppCompatActivity {
             while(true) {
                 int rnd = (int)(Math.random() * 12 ); //rnd는 0~11까지 랜덤 수
                 if (!flag[rnd]) {
+                    if(mBluetoothSocket!=null) {
+                        if (rnd == 11) {
+                            mThreadConnectedBluetooth.write1((byte) ((byte) (0x60) + (byte) (i - 1))); //*자리 전송
+                        } else if (rnd == 10) {
+                            mThreadConnectedBluetooth.write1((byte) ((byte) (0x70) + (byte) (i - 1))); //#자리 전송
+                        }
+                    }
+
                     int posId = getResources().getIdentifier("pos" + i, "id", getPackageName()); // @+id/pos1, @+id/pos2...를 posId에 넣는다.
                     int drawableId = getResources().getIdentifier("line_" + rnd, "drawable", getPackageName()); // drawable/line_0, drawable/line_2를 drawableId에 넣는다
 
@@ -527,13 +536,7 @@ public class MainActivity extends AppCompatActivity {
 
                     rndArray[rnd] = i-1;
 
-                    if(mBluetoothSocket!=null) {
-                        if (rnd == 11) {
-                            mThreadConnectedBluetooth.write1((byte) ((byte) (0x60) + (byte) (i - 1))); //*자리 전송
-                        } else if (rnd == 10) {
-                            mThreadConnectedBluetooth.write1((byte) ((byte) (0x70) + (byte) (i - 1))); //#자리 전송
-                        }
-                    }
+
                     break;
                 }
             }
