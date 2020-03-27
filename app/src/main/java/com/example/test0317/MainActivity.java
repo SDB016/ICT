@@ -265,11 +265,6 @@ public class MainActivity extends AppCompatActivity {
 //                        bytes = mmInStream.read(buffer, 0, bytes); // bytes만큼 읽어서 buffer[]의 0의 자리에 저장한다
 //
 //                        SearchStartEnd();
-//                        CopyArray();
-//
-//                    }
-//                } catch (IOException e) {
-//                    break;
 //                }
             }
         }
@@ -282,21 +277,25 @@ public class MainActivity extends AppCompatActivity {
                 String readMessage = new String(readBuf, 0, bytes);
                 Log.e("MainActivity", "SearchStartEnd(run) - message=" + readMessage);
                 RealMessage = readMessage.substring(1, bytes-1);  // RealMessage : 앞뒤 < >를 잘라낸 데이터
-                Log.e("MainActivity","realMessage = " + RealMessage);
-                arrMessage = RealMessage.toCharArray(); //arrMessage : 받아온 문자열 -> char[]로 변환한 데이터
+                /*Log.e("MainActivity","realMessage = " + RealMessage);
+                arrMessage = RealMessage.toCharArray(); //arrMessage : 받아온 문자열 -> char[]로 변환한 데이터*/
 
-                int[] tmp = new int[arrMessage.length];
-                for(int i=0; i<arrMessage.length; i++){
-                    tmp[i] = rndArray[arrMessage[i]]; //받아온 메세지(좌표값, position)에 해당하는 값을 tmp에 저장
-                }
-                Log.d("main","position = "+ tmp[0]);
 
-                int[] charPW = new int[newPW.length()];
+                char[] charPW = new char[newPW.length()];
                 for(int i = 0; i<charPW.length;i++) { //newPW의 길이만큼 실행
                     charPW[i] = (newPW.charAt(i)); //newPW를 char[]로 자르기
                     Log.d("main", "charPW = " + charPW[i]);
                 }
-                if (tmp == charPW){
+
+                int[] tmp = new int[charPW.length];
+
+                for (int i = 0; i<charPW.length;i++) {
+                    tmp[i] = rndArray[charPW[i]]; //charPW(값)이 있는 위치값을 tmp에 저장한다
+                }
+                String str = Arrays.toString(tmp).replace("[^0-9]","");
+                Log.d("main","strstr = "+str);
+
+                if (RealMessage.equals(str)){
                     mThreadConnectedBluetooth.write1((byte)0x41);
                 }
 /*
@@ -525,10 +524,8 @@ public class MainActivity extends AppCompatActivity {
                     iv_pos[i - 1].setImageResource(drawableId);  // 할당된 iv_pos[]에 그림 그리기
                     flag[rnd] = !flag[rnd];
 
-                    rndArray[i-1] = rnd;
-                    Log.d("main","rndarray = " + rndArray[i-1]);
 
-
+                    rndArray[rnd] = i-1;
 
                     if(mBluetoothSocket!=null) {
                         if (rnd == 11) {
