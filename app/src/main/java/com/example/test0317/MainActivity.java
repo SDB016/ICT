@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
     ImageButton btnChangePW;
     ImageView[] iv_pos = new ImageView[12];
 
-
     //Adapter
     SimpleAdapter adapterPaired;
     SimpleAdapter adapterDevice;
@@ -85,21 +84,14 @@ public class MainActivity extends AppCompatActivity {
     List<Map<String,String>> dataDevice;
     List<BluetoothDevice> bluetoothDevices;
     Set<BluetoothDevice> pairedDevices;
-    ;
-
     AlertDialog.Builder alertBuilder1;
     int selectDevice;
-
 
     String newPW = new String();
     int[] rndArray = new int[12];
 
-
-
     //입력받은 데이터가 저장될 버퍼
     byte[] receivedPW = new byte[32];
-
-
 
     final static UUID BT_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 
@@ -112,12 +104,10 @@ public class MainActivity extends AppCompatActivity {
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
-
         //UI
         btnSearch = findViewById(R.id.btnSearch);
         btnShuffle = findViewById(R.id.btn_shuffle);
         btnChangePW = findViewById(R.id.btnChangePW);
-
 
         //Adapter1
         dataPaired = new ArrayList<>();
@@ -144,8 +134,6 @@ public class MainActivity extends AppCompatActivity {
         savedData = getSharedPreferences("miniDB",MODE_PRIVATE);
         editor = savedData.edit();
 
-
-
         //블루투스 브로드캐스트 리시버 등록
         //리시버2
         IntentFilter searchFilter = new IntentFilter();
@@ -156,11 +144,6 @@ public class MainActivity extends AppCompatActivity {
         searchFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         registerReceiver(mBluetoothSearchReceiver, searchFilter);
 
-        //1. 블루투스가 꺼져있으면 활성화
-//        if(!mBluetoothAdapter.isEnabled()){
-//            mBluetoothAdapter.enable(); //강제 활성화
-//        }
-
         //2. 블루투스가 꺼져있으면 사용자에게 활성화 요청하기
         if(!mBluetoothAdapter.isEnabled()){
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -168,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
         }else{
             GetListPairedDevice();
         }
-
 
         Shuffle();
 
@@ -178,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
                 Shuffle();
             }
         });
-
 
         alertBuilder1 = new AlertDialog.Builder(this);
         alertBuilder1.setTitle("검색된 디바이스");
@@ -194,7 +175,6 @@ public class MainActivity extends AppCompatActivity {
                 connectSelectedDevice(address);
             }
         });
-        //alertBuilder1.setCancelable(false);
     }
 
     void connectSelectedDevice(String address){
@@ -216,7 +196,6 @@ public class MainActivity extends AppCompatActivity {
             Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(1000);
             Toast.makeText(getApplicationContext(),"연결되었습니다",Toast.LENGTH_LONG).show();
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -251,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
             int checkBytes = 0;
             byte[] buffer_b = new byte[1024];
 
-
             while (true) {
 
                 if (mBluetoothSocket == null){
@@ -282,16 +260,6 @@ public class MainActivity extends AppCompatActivity {
                     //connectionLost();
                     break;
                 }
-
-//                try {
-//                    bytes = mmInStream.available();
-//                    if (bytes != 0) {
-//                        SystemClock.sleep(100);
-//                        bytes = mmInStream.available(); // 현재 읽을 수 있는 바이트 수를 얻는다
-//                        bytes = mmInStream.read(buffer, 0, bytes); // bytes만큼 읽어서 buffer[]의 0의 자리에 저장한다
-//
-//                        SearchStartEnd();
-//                }
             }
         }
 
@@ -329,39 +297,8 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     mThreadConnectedBluetooth.write1((byte)0x42);
                 }
-/*
-                int[] tmp = new int[newPW.length()];
-                int k =0;
-                char[] charPw = new char[newPW.length()]; //newPW를 char형 배열로 변환
-                String rndStr[]=new String[rndArray.length];
-                for (int i =0; i<rndArray.length;i++) {
-                     rndStr[i] = String.valueOf(rndArray[i]); //rndArray를 String으로 변환
-                }
-                for(int i = 0; i<charPw.length;i++) { //newPW의 길이만큼 실행
-                    charPw[i] = (newPW.charAt(i)); //newPW를 char[]로 자르기
-                    Log.d("main","charPW = "+ charPw[i]);
-                    //rndStr[]
-                   // tmp[k] = rndStr.indexOf(charPw[i]); //rndArray에서 저장된 pw의 index값을 tmp에 저장
-                    Log.d("rndaa",rndStr[0]);
-                    k++;
-                }*/
-
-                //if(Arrays.equals(tmparr,arrMessage)){
-                //    mThreadConnectedBluetooth.write1((byte)0x41);
-               // }
-        }
-            //readBuf = null;
-        }
-
-        /*
-        public void write(String str) {
-            byte[] bytes = str.getBytes();
-            try {
-                mmOutStream.write(bytes);
-            } catch (IOException e) {
-                Toast.makeText(getApplicationContext(), "데이터 전송 중 오류가 발생했습니다.", Toast.LENGTH_LONG).show();
             }
-        }*/
+        }
 
         public void write1(byte str) {
             byte bytes = str;
@@ -526,8 +463,6 @@ public class MainActivity extends AppCompatActivity {
         adapterPaired.notifyDataSetChanged();
     }
 
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -574,25 +509,12 @@ public class MainActivity extends AppCompatActivity {
                     iv_pos[i - 1].setImageResource(drawableId);  // 할당된 iv_pos[]에 그림 그리기
                     flag[rnd] = !flag[rnd];
 
-
                     rndArray[rnd] = i-1;
-
 
                     break;
                 }
             }
         }
-
-        /*
-        char[] charMessage = new char[RealMessage.length()];
-        int[] intArray;
-        RealMessage.getChars(0, RealMessage.length(), charMessage, 0); //charMessage에 문자열을 문자배열로 복사
-        intArray = new String(charMessage).chars().toArray();
-        for(int k = 0; k<RealMessage.length(); k++) {
-            intArray[k] = rndArray[charMessage[k]];
-
-        }*/
-        //RecievedPW = new String(charMessage);
     }
 
 
