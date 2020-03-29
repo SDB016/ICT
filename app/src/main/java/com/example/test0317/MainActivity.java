@@ -16,6 +16,7 @@ import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.os.Vibrator;
 import android.text.LoginFilter;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +26,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -57,10 +59,10 @@ public class MainActivity extends AppCompatActivity {
     //BluetoothAdapter
     BluetoothAdapter mBluetoothAdapter;
     BluetoothSocket mBluetoothSocket;
+    BluetoothDevice mBluetoothDevice;
 
     //블루투스 요청 액티비티 코드
     final static int BLUETOOTH_REQUEST_CODE = 100;
-    final static int BT_MESSAGE_READ = 8;
 
     private SharedPreferences savedData;
     private SharedPreferences.Editor editor;
@@ -68,9 +70,9 @@ public class MainActivity extends AppCompatActivity {
     ConnectedBluetoothThread mThreadConnectedBluetooth;
 
     //UI
-    Button btnSearch;
-    Button btnShuffle;
-    Button btnChangePW;
+    ImageButton btnSearch;
+    ImageButton btnShuffle;
+    ImageButton btnChangePW;
     ImageView[] iv_pos = new ImageView[12];
 
 
@@ -82,14 +84,14 @@ public class MainActivity extends AppCompatActivity {
     List<Map<String,String>> dataPaired;
     List<Map<String,String>> dataDevice;
     List<BluetoothDevice> bluetoothDevices;
+    Set<BluetoothDevice> pairedDevices;
+    ;
 
     AlertDialog.Builder alertBuilder1;
     int selectDevice;
 
-    int indexStart, indexEnd = -1;
 
-
-    String newPW = "10";
+    String newPW = new String();
     int[] rndArray = new int[12];
 
 
@@ -110,8 +112,9 @@ public class MainActivity extends AppCompatActivity {
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
 
+
         //UI
-        btnSearch = (Button)findViewById(R.id.btnSearch);
+        btnSearch = findViewById(R.id.btnSearch);
         btnShuffle = findViewById(R.id.btn_shuffle);
         btnChangePW = findViewById(R.id.btnChangePW);
 
@@ -140,6 +143,8 @@ public class MainActivity extends AppCompatActivity {
 
         savedData = getSharedPreferences("miniDB",MODE_PRIVATE);
         editor = savedData.edit();
+
+
 
         //블루투스 브로드캐스트 리시버 등록
         //리시버2
@@ -180,30 +185,43 @@ public class MainActivity extends AppCompatActivity {
         alertBuilder1.setAdapter(adapterDevice, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
-                BluetoothDevice device;
+
                 mBluetoothAdapter.cancelDiscovery();
                 String strName = adapterDevice.getItem(id).toString();
                 String address = strName.substring(strName.indexOf("address=")+8, strName.indexOf("name=")-2);
-                device = mBluetoothAdapter.getRemoteDevice(address);
+                mBluetoothDevice = mBluetoothAdapter.getRemoteDevice(address);
 
-                try {
-                    //선택한 디바이스 페어링 요청
-                   // Method method = device.getClass().getMethod("createBond", (Class[]) null);
-                   // method.invoke(device, (Object[]) null);
-                    mBluetoothSocket = device.createInsecureRfcommSocketToServiceRecord(BT_UUID);
-                    mBluetoothSocket.connect();
-                    mThreadConnectedBluetooth = new ConnectedBluetoothThread(mBluetoothSocket);
-                    mThreadConnectedBluetooth.start();
-                    editor.putString("address",address);
-                    editor.putBoolean("IsAddress",true);
-                    editor.apply();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    editor.putBoolean("IsAddress",false);
-                }
+                connectSelectedDevice(address);
             }
         });
         //alertBuilder1.setCancelable(false);
+    }
+
+    void connectSelectedDevice(String address){
+        mBluetoothDevice = mBluetoothAdapter.getRemoteDevice(address);
+
+        try {
+
+            //선택한 디바이스 페어링 요청
+            // Method method = device.getClass().getMethod("createBond", (Class[]) null);
+            // method.invoke(device, (Object[]) null);
+            mBluetoothSocket = mBluetoothDevice.createInsecureRfcommSocketToServiceRecord(BT_UUID);
+            mBluetoothSocket.connect();
+            mThreadConnectedBluetooth = new ConnectedBluetoothThread(mBluetoothSocket);
+            mThreadConnectedBluetooth.start();
+            editor.putString("address",address);
+            editor.putBoolean("IsAddress",true);
+            editor.apply();
+            btnShuffle.performClick();
+            Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            vibrator.vibrate(1000);
+            Toast.makeText(getApplicationContext(),"연결되었습니다",Toast.LENGTH_LONG).show();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            editor.putBoolean("IsAddress",false);
+        }
     }
 
     private class ConnectedBluetoothThread extends Thread{
@@ -233,7 +251,15 @@ public class MainActivity extends AppCompatActivity {
             int checkBytes = 0;
             byte[] buffer_b = new byte[1024];
 
+
             while (true) {
+
+                if (mBluetoothSocket == null){
+                    btnSearch.performClick();
+                    Toast.makeText(getApplicationContext(),"자동 검색을 시작합니다",Toast.LENGTH_LONG).show();
+                }
+
+
                 try {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
@@ -269,6 +295,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+
         public void GetReceivedData(int bytes, byte[] buffer){
             String RealMessage;
             char[] arrMessage;
@@ -280,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("MainActivity","realMessage = " + RealMessage);
                 /*arrMessage = RealMessage.toCharArray(); //arrMessage : 받아온 문자열 -> char[]로 변환한 데이터*/
 
-
+                newPW = savedData.getString("newPW","00");
                 char[] charPW = new char[newPW.length()];
                 for(int i = 0; i<charPW.length;i++) { //newPW의 길이만큼 실행
                     charPW[i] = (newPW.charAt(i)); //newPW를 char[]로 자르기
@@ -299,6 +326,9 @@ public class MainActivity extends AppCompatActivity {
                 if (RealMessage.equals(str)){
                     mThreadConnectedBluetooth.write1((byte)0x41);
                 }
+                else {
+                    mThreadConnectedBluetooth.write1((byte)0x42);
+                }
 /*
                 int[] tmp = new int[newPW.length()];
                 int k =0;
@@ -315,11 +345,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("rndaa",rndStr[0]);
                     k++;
                 }*/
-
-
-
-
-
 
                 //if(Arrays.equals(tmparr,arrMessage)){
                 //    mThreadConnectedBluetooth.write1((byte)0x41);
@@ -406,6 +431,16 @@ public class MainActivity extends AppCompatActivity {
                 //블루투스 디바이스 검색 종료
                 case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
                     btnSearch.setEnabled(true);
+                    pairedDevices = mBluetoothAdapter.getBondedDevices();
+                    if (savedData.getBoolean("IsAddress",false)&&(pairedDevices.size()>0)){
+                        for (BluetoothDevice tempDevice : bluetoothDevices){
+                            String address = savedData.getString("address","nope");
+                            if (tempDevice.getAddress().equals(address)){
+                                connectSelectedDevice(address);
+                                break;
+                            }
+                        }
+                    }
                     break;
 
 
@@ -422,7 +457,11 @@ public class MainActivity extends AppCompatActivity {
                     //리스트 목록갱신
                     adapterDevice.notifyDataSetChanged();
                     //블루투스 디바이스 저장
-
+                    bluetoothDevices.add(device);
+                    pairedDevices = mBluetoothAdapter.getBondedDevices();
+                    if (device.getAddress().equals(savedData.getString("address","nope"))&& pairedDevices.size()>0){
+                        mBluetoothAdapter.cancelDiscovery();
+                    }
                     break;
 
                 //블루투스 디바이스 페어링 상태 변화
@@ -471,11 +510,11 @@ public class MainActivity extends AppCompatActivity {
 
     //이미 페어링된 목록 가져오기
     public void GetListPairedDevice(){
-        Set<BluetoothDevice> pairedDevice = mBluetoothAdapter.getBondedDevices();
 
         dataPaired.clear();
-        if(pairedDevice.size() > 0){
-            for(BluetoothDevice device : pairedDevice){
+        pairedDevices = mBluetoothAdapter.getBondedDevices();
+        if(pairedDevices.size() > 0){
+            for(BluetoothDevice device : pairedDevices){
                 //데이터 저장
                 Map map = new HashMap();
                 map.put("name", device.getName()); //device.getName() : 블루투스 디바이스의 이름
@@ -521,8 +560,10 @@ public class MainActivity extends AppCompatActivity {
                     if(mBluetoothSocket!=null) {
                         if (rnd == 11) {
                             mThreadConnectedBluetooth.write1((byte) ((byte) (0x60) + (byte) (i - 1))); //*자리 전송
+                            SystemClock.sleep(30);
                         } else if (rnd == 10) {
                             mThreadConnectedBluetooth.write1((byte) ((byte) (0x70) + (byte) (i - 1))); //#자리 전송
+                            SystemClock.sleep(30);
                         }
                     }
 
@@ -541,8 +582,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-
-
 
         /*
         char[] charMessage = new char[RealMessage.length()];
@@ -570,6 +609,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 newPW = et.getText().toString();
+                editor.putString("newPW",newPW);
+                editor.apply();
                 Toast.makeText(getApplicationContext(),"비밀번호가 " + newPW + "로 변경되었습니다",Toast.LENGTH_LONG).show();
             }
         });
@@ -582,11 +623,6 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    public void ComparePW(String str){
-        if(newPW.equals(str)){
-            mThreadConnectedBluetooth.write1((byte)0x41);
-        }
-    }
 
     @Override
     protected void onDestroy() {

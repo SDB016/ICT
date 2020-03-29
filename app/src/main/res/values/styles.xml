@@ -10,8 +10,8 @@
         <item name="windowNoTitle">true</item>
     </style>
     <style name="ChangeMyPW" parent="@style/Theme.AppCompat.Dialog.Alert">
-        <item name="android:background">#0f4c81</item>
-        <item name="android:textColor">#e1b643</item>
+        <item name="android:background">#ffffff</item>
+        <item name="android:textColor">#75b6ff</item>
         <item name="android:typeface">monospace</item>
     </style>
 </resources>

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#75b6ff"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -11,8 +12,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:weightSum="10">
-
+        android:weightSum="11.6">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2.7" >
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/kitel"
+                android:layout_margin="45dp"
+                />
+        </RelativeLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -24,41 +35,23 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="2">
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxHeight="80dp"
-                    android:scaleType="fitCenter"
-                    android:text= "비밀번호 변경"
-                    android:layout_gravity="center"
-                    android:onClick="ChangePW"
-                    android:adjustViewBounds="true"
-                    android:id="@+id/btnChangePW"/>
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-
             <RelativeLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2">
 
-                <!--<Button
+                <ImageButton
+                    android:id="@+id/btnChangePW"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxHeight="55dp"
-                    android:text=""
                     android:layout_centerInParent="true"
+                    android:adjustViewBounds="true"
+                    android:background="#75b6ff"
+                    android:maxHeight="60dp"
                     android:scaleType="fitCenter"
-                    android:adjustViewBounds="true"/>-->
+                    android:onClick="ChangePW"
+                    android:src="@drawable/changepw" />
             </RelativeLayout>
-
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -68,24 +61,67 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2">
-
-                <Button
+                <ImageButton
                     android:id="@+id/btnSearch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxHeight="55dp"
-                    android:onClick="mOnBluetoothSearch"
-                    android:text="검색"
                     android:layout_centerInParent="true"
+                    android:adjustViewBounds="true"
+                    android:background="#75b6ff"
+                    android:maxHeight="60dp"
                     android:scaleType="fitCenter"
-                    android:adjustViewBounds="true"/>
+                    android:onClick="mOnBluetoothSearch"
+                    android:src="@drawable/search"
+                    android:text="검색" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2">
+
+                <ImageButton
+                    android:id="@+id/btn_shuffle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:adjustViewBounds="true"
+                    android:background="#75b6ff"
+                    android:maxHeight="60dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/shuffle"
+                    android:text="셔플" />
             </RelativeLayout>
         </LinearLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="0.1"
+            android:orientation="horizontal"
+            android:weightSum="10">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="2"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="#0f4c81"
+                android:layout_weight="6"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="2"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.7" />
 
 
         <LinearLayout
@@ -93,7 +129,7 @@
             android:layout_height="0dp"
             android:layout_weight="1.2"
             android:orientation="horizontal"
-            android:weightSum="10">
+            android:weightSum="9">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -110,7 +146,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="0.5" />
 
             <ImageView
                 android:id="@+id/pos2"
@@ -122,7 +158,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="0.5" />
 
             <ImageView
                 android:id="@+id/pos3"
@@ -137,14 +173,17 @@
                 android:layout_weight="1" />
 
         </LinearLayout>
-
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.2" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1.2"
             android:orientation="horizontal"
-            android:weightSum="10">
+            android:weightSum="9">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -161,7 +200,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="0.5" />
 
             <ImageView
                 android:id="@+id/pos5"
@@ -173,7 +212,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="0.5" />
 
             <ImageView
                 android:id="@+id/pos6"
@@ -187,13 +226,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
         </LinearLayout>
-
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.2" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1.2"
             android:orientation="horizontal"
-            android:weightSum="10">
+            android:weightSum="9">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -210,7 +252,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="0.5" />
 
             <ImageView
                 android:id="@+id/pos8"
@@ -222,7 +264,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="0.5" />
 
             <ImageView
                 android:id="@+id/pos9"
@@ -236,13 +278,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
         </LinearLayout>
-
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.2" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1.2"
             android:orientation="horizontal"
-            android:weightSum="10">
+            android:weightSum="9">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -259,7 +304,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="0.5" />
 
             <ImageView
                 android:id="@+id/pos11"
@@ -271,7 +316,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="0.5" />
 
             <ImageView
                 android:id="@+id/pos12"
@@ -289,34 +334,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="2.2"
+            android:layout_weight="0.7"
             android:orientation="horizontal"
             android:weightSum="10">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="3">
-
-                <Button
-                    android:id="@+id/btn_shuffle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxHeight="55dp"
-                    android:text="셔플"
-                    android:layout_centerInParent="true"
-                    android:scaleType="fitCenter"
-                    android:adjustViewBounds="true"/>
-            </RelativeLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="6"/>
         </LinearLayout>
 
     </LinearLayout>
