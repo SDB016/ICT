@@ -1,0 +1,17 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">#0f4c81</item>
+        <item name="colorPrimaryDark">#0f4c81</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+    <style name="ChangeMyPW" parent="@style/Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">#ffffff</item>
+        <item name="android:textColor">#75b6ff</item>
+        <item name="android:typeface">monospace</item>
+    </style>
+</resources>
