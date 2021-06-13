@@ -1,4 +1,4 @@
-# ICT
+# Double Screen Lock Door
 
 Title: can u see me?
 It is basically an app that is used with door lock hardware. If you touch the touchpad where only the position is displayed without numbers, Art Mega (mcu) will send the position value to the app.
